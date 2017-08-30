@@ -6,3 +6,7 @@ For this class, the datasets can be found on CANVAS.
 
 You might also be interested in the website for [BIOS6623](https://bios6623-ucd.github.oi).
 
+This is the repository of Eleanor Cotton. I cloned this repo from GitHub.
+I opened this file in my local repository. I am going to save it, commit
+the changes and push it to GitHub. I have no experience with GitHub or 
+markdown
