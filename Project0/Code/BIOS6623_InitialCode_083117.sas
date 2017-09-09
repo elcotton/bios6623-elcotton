@@ -6,3 +6,6 @@ proc import datafile = "C:\Users\cottonel\Documents\BIOS6623_AdvancedData\Projec
 	getnames = yes;
 run;
 
+*Run model;
+proc 
+
