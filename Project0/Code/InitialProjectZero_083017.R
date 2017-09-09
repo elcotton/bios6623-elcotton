@@ -2,6 +2,9 @@
 #       BIOS 6623: Project Zero        #
 ########################################
 
+#load packages
+library(ggplot2)
+
 #import data
 teeth <- read.csv("C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Zero/ProjectZeroData.csv")
 
@@ -17,7 +20,7 @@ hist(teeth$attach1year)
 hist(teeth$pdbase)
 hist(teeth$pd1year)
 
-#Make Table One
+####Make Table One####
 group1 <- teeth[teeth$trtgroup == 1,]
 group2 <- teeth[teeth$trtgroup == 2,]
 group3 <- teeth[teeth$trtgroup == 3,]
@@ -56,9 +59,72 @@ for(i in 7:11){
   tableone[i+4,6] <- paste(round(mean(group5[,i], na.rm = TRUE),2), "±", round(sd(group5[,i], na.rm = TRUE),2))
 }
 
+#export the file
+write.csv(tableone, "C:/Repositories/bios6623-elcotton/Project0/Reports/tableOne.csv")
+
+####Reformat data into long way####
+teethBase <- teeth[,c(1:8,10)]
+teethBase$time <- "base"
+colnames(teethBase)[c(8,9)] <- c("attach", "pd")
+teeth1year <- teeth[,c(1:7,9,11)]
+teeth1year$time <- "1year"
+colnames(teeth1year)[c(8,9)] <- c("attach", "pd")
+teethLong <- rbind(teethBase,teeth1year)
+
+teethLong$trtgroup <- as.factor(teethLong$trtgroup)
+teethLong$sex <- as.factor(teethLong$sex)
+teethLong$smoker <- as.factor(teethLong$smoker)
+teethLong$race <- as.factor(teethLong$race)
+teethLong$time <- factor(teethLong$time, levels = c("base", "1year"))
+
+####Make graphs####
+ggplot(teethLong, aes(x = trtgroup, y = attach, fill = time)) +
+  geom_boxplot(alpha = 0.7, position = position_dodge(0.85)) + 
+  scale_y_continuous(name = "Average Attachment Loss") +
+  scale_x_discrete(name = "Treatment Group") +
+  ggtitle("Average Attachment Loss by Treatment Group") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank()) +
+  scale_fill_manual(values = c("darkslategray3", "goldenrod1"), 
+                    labels = c("Base", "1 year"))
+
+ggplot(teethLong, aes(x = trtgroup, y = pd, fill = time)) +
+  geom_boxplot(alpha = 0.7, position = position_dodge(0.85)) + 
+  scale_y_continuous(name = "Average Pocket Depth") +
+  scale_x_discrete(name = "Treatment Group") +
+  ggtitle("Average Pocket Depth by Treatment Group") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank()) +
+  scale_fill_manual(values = c("darkslategray3", "goldenrod1"), 
+                    labels = c("Base", "1 year"))
+
+#no trend
+ggplot(teethLong, aes(x = sex, y = pd, fill = time)) +
+  geom_boxplot()
+
+#quite different among the races, small sample sizes though
+ggplot(teethLong, aes(x = race, y = pd, fill = time)) +
+  geom_boxplot()
+
+#higher for smokers
+ggplot(teethLong, aes(x = smoker, y = pd, fill = time)) +
+  geom_boxplot()
+
+#no trend
+plot(teeth$attach1year~teeth$age)
+
+#interesting...but part of question?
+plot(teeth$attachbase~teeth$pdbase)
+
+#interesting...but part of question?
+plot(teeth$attach1year~teeth$pd1year)
 
 
-
+####Models are gonna be run in SAS####
 
 
 
