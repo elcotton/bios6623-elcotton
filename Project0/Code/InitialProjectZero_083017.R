@@ -124,7 +124,22 @@ plot(teeth$attachbase~teeth$pdbase)
 plot(teeth$attach1year~teeth$pd1year)
 
 
+
 ####Models are gonna be run in SAS####
+#get difference
+for(i in 1:nrow(teeth)){
+  if(teeth$pd1year[i] == ){
+    teeth$pd1year[i] <- NA
+  } else {
+    teeth$pd1year[i] <- teeth$pd1year[i] 
+  }
+}
+
+teeth$pdDiff <- teeth$pd1year-teeth$pdbase
+teeth$attachDiff <- teeth$attach1year-teeth$attachbase
+
+#RUN MODEL!
+modelAttach <- glm(teeth$)
 
 
 
