@@ -8,31 +8,28 @@ library(ggplot2)
 #import data
 teeth <- read.csv("C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Zero/ProjectZeroData.csv")
 
-#Check out the data
-table(teeth$trtgroup)
-table(teeth$sex)
-table(teeth$race)
-hist(teeth$age)
-table(teeth$smoker)
-hist(teeth$sites)
-hist(teeth$attachbase)
-hist(teeth$attach1year)
-hist(teeth$pdbase)
-hist(teeth$pd1year)
+#clean up the values
+teeth$attach1year[teeth$attach1year == "."] <- NA
+teeth$pd1year[teeth$pd1year == "."] <- NA
+teeth$pd1year <- as.numeric(as.character(teeth$pd1year))
+teeth$attach1year <- as.numeric(as.character(teeth$attach1year))
 
 ####Make Table One####
-group1 <- teeth[teeth$trtgroup == 1,]
-group2 <- teeth[teeth$trtgroup == 2,]
-group3 <- teeth[teeth$trtgroup == 3,]
-group4 <- teeth[teeth$trtgroup == 4,]
-group5 <- teeth[teeth$trtgroup == 5,]
+#Subset to only include the non-missing individuals
+teethSmall <- teeth[is.na(teeth$attach1year) == F |is.na(teeth$pd1year) == F,]
+
+group1 <- teethSmall[teethSmall$trtgroup == 1,]
+group2 <- teethSmall[teethSmall$trtgroup == 2,]
+group3 <- teethSmall[teethSmall$trtgroup == 3,]
+group4 <- teethSmall[teethSmall$trtgroup == 4,]
+group5 <- teethSmall[teethSmall$trtgroup == 5,]
 
 tableone <- matrix(NA,nrow = 15, ncol = 6)
 colnames(tableone) <- c("Variable", "Placebo", "No Treatment", "Low", "Medium", "High")
 tableone[,1] <- c("Number","Sex", "Male", "Female", "Race", "Native American", "African American",
                   "Asian", "White", "Smoker", "Sites", "Attach (base)", "Attach (1 year)",
                   "PD (base)", "PD (1 year)")
-tableone[1,2:6] <- table(teeth$trtgroup)
+tableone[1,2:6] <- table(teethSmall$trtgroup)
 tableone[3:4,2] <- round(prop.table(table(group1$sex))*100,2)
 tableone[3:4,3] <- round(prop.table(table(group2$sex))*100,2)
 tableone[3:4,4] <- round(prop.table(table(group3$sex))*100,2)
@@ -62,88 +59,79 @@ for(i in 7:11){
 #export the file
 write.csv(tableone, "C:/Repositories/bios6623-elcotton/Project0/Reports/tableOne.csv")
 
-####Reformat data into long way####
-teethBase <- teeth[,c(1:8,10)]
-teethBase$time <- "base"
-colnames(teethBase)[c(8,9)] <- c("attach", "pd")
-teeth1year <- teeth[,c(1:7,9,11)]
-teeth1year$time <- "1year"
-colnames(teeth1year)[c(8,9)] <- c("attach", "pd")
-teethLong <- rbind(teethBase,teeth1year)
-
-teethLong$trtgroup <- as.factor(teethLong$trtgroup)
-teethLong$sex <- as.factor(teethLong$sex)
-teethLong$smoker <- as.factor(teethLong$smoker)
-teethLong$race <- as.factor(teethLong$race)
-teethLong$time <- factor(teethLong$time, levels = c("base", "1year"))
-
 ####Make graphs####
-ggplot(teethLong, aes(x = trtgroup, y = attach, fill = time)) +
-  geom_boxplot(alpha = 0.7, position = position_dodge(0.85)) + 
-  scale_y_continuous(name = "Average Attachment Loss") +
-  scale_x_discrete(name = "Treatment Group") +
-  ggtitle("Average Attachment Loss by Treatment Group") +
-  theme_bw() +
-  theme(plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        legend.title = element_blank()) +
-  scale_fill_manual(values = c("darkslategray3", "goldenrod1"), 
-                    labels = c("Base", "1 year"))
-
-ggplot(teethLong, aes(x = trtgroup, y = pd, fill = time)) +
-  geom_boxplot(alpha = 0.7, position = position_dodge(0.85)) + 
-  scale_y_continuous(name = "Average Pocket Depth") +
-  scale_x_discrete(name = "Treatment Group") +
-  ggtitle("Average Pocket Depth by Treatment Group") +
-  theme_bw() +
-  theme(plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        legend.title = element_blank()) +
-  scale_fill_manual(values = c("darkslategray3", "goldenrod1"), 
-                    labels = c("Base", "1 year"))
-
-#no trend
-ggplot(teethLong, aes(x = sex, y = pd, fill = time)) +
-  geom_boxplot()
-
-#quite different among the races, small sample sizes though
-ggplot(teethLong, aes(x = race, y = pd, fill = time)) +
-  geom_boxplot()
-
-#higher for smokers
-ggplot(teethLong, aes(x = smoker, y = pd, fill = time)) +
-  geom_boxplot()
-
-#no trend
-plot(teeth$attach1year~teeth$age)
-
-#interesting...but part of question?
-plot(teeth$attachbase~teeth$pdbase)
-
-#interesting...but part of question?
-plot(teeth$attach1year~teeth$pd1year)
-
-
-
-####Models are gonna be run in SAS####
-#get difference
-for(i in 1:nrow(teeth)){
-  if(teeth$pd1year[i] == ){
-    teeth$pd1year[i] <- NA
-  } else {
-    teeth$pd1year[i] <- teeth$pd1year[i] 
-  }
-}
-
 teeth$pdDiff <- teeth$pd1year-teeth$pdbase
 teeth$attachDiff <- teeth$attach1year-teeth$attachbase
+teeth$trtgroup <- as.numeric(teeth$trtgroup)
+teeth$trtgroup[teeth$trtgroup == 2] <- "Control"
+teeth$trtgroup[teeth$trtgroup == 1] <- "Placebo"
+teeth$trtgroup[teeth$trtgroup == 3] <- "Low"
+teeth$trtgroup[teeth$trtgroup == 4] <- "Medium"
+teeth$trtgroup[teeth$trtgroup == 5] <- "High"
+teeth$trtgroup <- factor(teeth$trtgroup, levels = c("Control", "Placebo", "Low", "Medium", "High"))
 
+
+ggplot(teeth, aes(x = trtgroup, y = attachDiff)) +
+  geom_boxplot(alpha = 0.7, fill = "darkslategray3") + 
+  scale_y_continuous(name = "Difference in Attachment loss (Year 1-Baseline)") +
+  scale_x_discrete(name = "Treatment Group") +
+  ggtitle("Graph 1:\n Change in Attachemnt Loss by Treatment Group") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank())
+
+
+ggplot(teeth, aes(x = trtgroup, y = pdDiff)) +
+  geom_boxplot(alpha = 0.7, fill = "goldenrod1") + 
+  scale_y_continuous(name = "Difference in Pocket Depth (Year 1-Baseline)") +
+  scale_x_discrete(name = "Treatment Group") +
+  ggtitle("Graph 2:\n Change in Pocket Depth by Treatment Group") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank())
+
+###Should covariates be included?###
+#None are significant, so nope!
+teeth$age <- as.numeric(as.character(teeth$age))
+summary(aov(teeth$age~teeth$trtgroup))
+summary(aov(teeth$sites~teeth$trtgroup))
+chisq.test(teeth$trtgroup,teeth$sex)
+fisher.test(teeth$race, teeth$trtgroup)
+fisher.test(teeth$smoker,teeth$trtgroup)
+
+####Modeling####
 #RUN MODEL!
-modelAttach <- glm(teeth$)
+modelAttach <- summary(lm(teeth$attachDiff~relevel(as.factor(teeth$trtgroup), "Control") + teeth$attachbase))
+modelPD <- summary(lm(teeth$pdDiff~relevel(as.factor(teeth$trtgroup), "Control") + teeth$pdbase))
 
+#check assumptions
+par(mfrow = c(2,2))
+modelAttachPlot <- lm(teeth$attachDiff~relevel(as.factor(teeth$trtgroup), "Control") + teeth$attachbase)
+plot(modelAttachPlot, which = 1:4)
 
+par(mfrow = c(2,2))
+modelPDPlot <- lm(teeth$pdDiff~relevel(as.factor(teeth$trtgroup), "Control") + teeth$pdbase)
+plot(modelPDPlot, which = 1:4)
 
+#Make table based on model
+tabletwo <- matrix(NA, nrow = 6, ncol = 4)
+colnames(tabletwo) <- c("","Coefficients", "SE", "P-Value")
+tabletwo[,1] <- c("Control", "Placebo", "Low", "Medium", "High", "Attachment Baseline")
+tabletwo[,2] <- round(modelAttach$coefficients[,1], 4)
+tabletwo[,3] <- round(modelAttach$coefficients[,2], 4)
+tabletwo[,4] <- round(modelAttach$coefficients[,4], 4)
 
+tablethree <- matrix(NA, nrow = 6, ncol = 4)
+colnames(tablethree) <- c("","Coefficients", "SE", "P-Value")
+tablethree[,1] <- c("Control", "Placebo", "Low", "Medium", "High", "Pocket Depth Baseline")
+tablethree[,2] <- round(modelPD$coefficients[,1], 4)
+tablethree[,3] <- round(modelPD$coefficients[,2], 4)
+tablethree[,4] <- round(modelPD$coefficients[,4], 4)
+
+write.csv(tabletwo, "C:/Repositories/bios6623-elcotton/Project0/Reports/tableTwo.csv")
+write.csv(tablethree, "C:/Repositories/bios6623-elcotton/Project0/Reports/tableThree.csv")
 
 
 
