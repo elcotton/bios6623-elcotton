@@ -8,20 +8,21 @@ hiv <- read.csv("C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_One/B
 #Subset to the years of interest
 hiv <- hiv[which(hiv$years == 0|hiv$year == 2),]
 
-#What to include
-#baseiine value of outcome, baseline age, baseline bmi 
-
+#Make our mini datasets
 hivBaseline <- hiv[which(hiv$years == 0),]
 hivYear2 <- hiv[which(hiv$years == 2),]
 
-#Change Race (good balance-no missing)
+###Get the variables into the correct groupings based on Camille's email
+#Use only baseline values
+#White vs Non White
 hivBaseline$RACE[which(hivBaseline$RACE == 1)] <- "White, Non-Hispanic"
 hivBaseline$RACE[which(hivBaseline$RACE == "2"|hivBaseline$RACE == "3"|hivBaseline$RACE == "4"|
                          hivBaseline$RACE == "7"|hivBaseline$RACE == "8")] <- "Non White"
 
 #Alcohol Use (poor balance--no missing)
-hivBaseline$DKGRP[which(hivBaseline$DKGRP == 3| hivBaseline$DKGRP == 2)] <- "4 or more/week"
-hivBaseline$DKGRP[which(hivBaseline$DKGRP == "0"|hivBaseline$DKGRP == "1")] <- "3 or less/week"
+hivBaseline$DKGRP[which(hivBaseline$DKGRP == 3)] <- "14 or more/week"
+hivBaseline$DKGRP[which(hivBaseline$DKGRP == "0"|hivBaseline$DKGRP == "1"| 
+                          hivBaseline$DKGRP == "2")] <- "13 or less/week"
 
 #Income(34 missing---good balance)
 hivBaseline$income[which(hivBaseline$income == 9)] <- NA
@@ -33,9 +34,9 @@ hivBaseline$income[which(hivBaseline$income == "5"|hivBaseline$income == "6"|
 
 #Education(no missing---new grouping)
 hivBaseline$EDUCBAS[which(hivBaseline$EDUCBAS == 1|hivBaseline$EDUCBAS == 2|
-                            hivBaseline$EDUCBAS == 3|hivBaseline$EDUCBAS == 4)] <- "1 year of college or less"
-hivBaseline$EDUCBAS[which(hivBaseline$EDUCBAS == "5"|hivBaseline$EDUCBAS == "6"|
-                            hivBaseline$EDUCBAS == "7")] <- "4 years of college or more"
+                            hivBaseline$EDUCBAS == 3)] <- "HS or less"
+hivBaseline$EDUCBAS[which(hivBaseline$EDUCBAS == "4"|hivBaseline$EDUCBAS == "5"|
+                            hivBaseline$EDUCBAS == "6"|hivBaseline$EDUCBAS == "7")] <- "1 year of college or more"
 
 #Marijuana Use (no missing, good balance)
 hivBaseline$HASHV[which(hivBaseline$HASHV == 1)] <- "No"
@@ -46,9 +47,8 @@ hivBaseline$SMOKE[which(hivBaseline$SMOKE == 1|hivBaseline$SMOKE == 2)] <- "Neve
 hivBaseline$SMOKE[which(hivBaseline$SMOKE == "3")] <- "Current Smoker"
 
 #Adherence---with Year 2
-hivYear2$ADH[which(hivYear2$ADH == 1)] <- "100%"
-hivYear2$ADH[which(hivYear2$ADH == "2"|hivYear2$ADH == "3"|
-                     hivYear2$ADH == "4")] <- "99% or less"
+hivYear2$ADH[which(hivYear2$ADH == 1|hivYear2$ADH == 2)] <- "95% or more"
+hivYear2$ADH[which(hivYear2$ADH == "3"|hivYear2$ADH == "4")] <- "94% or less"
 
 
 #Subset baseline to only have the variables we want
@@ -68,22 +68,20 @@ colnames(hivYear2) <- c("ID", "QOL_MentYear2", "QOL_PhysYear2",
 #506 people total who had year 2 measurements
 hiv <- merge(hivBaseline,hivYear2, by = "ID")
 
-#For now---omit the crazy values
+#delete the impossible values of BMI
 hiv$BMI[which(hiv$BMI > 400|hiv$BMI < 0)] <- NA
+
+#Clean up VLoad
+#Put it on the log scale
+hiv$logVLoadBase <- log(hiv$VloadBase)
+hiv$logVLoad2year <- log(hiv$VloadYear2)
 
 #Calculate the difference variables
 hiv$QOL_MentDiff <- hiv$QOL_MentYear2-hiv$QOL_MentBase
 hiv$QOL_PhysDiff <- hiv$QOL_PhysYear2-hiv$QOL_PhysBase
 hiv$CD4CountDiff <- hiv$CD4CountYear2-hiv$CD4CountBase
-hiv$VloadDiff <- hiv$VloadYear2-hiv$VloadBase
+hiv$logVloadDiff <- hiv$logVLoad2year/hiv$logVLoadBase
 
-hist(hiv$CD4CountDiff)
-hist(hiv$QOL_MentDiff)
-
-summary(hiv$QOL_MentDiff)
-summary(hiv$QOL_PhysDiff)
-summary(hiv$CD4CountDiff)
-summary(hiv$VloadDiff)
 
 hivDrug <- hiv[which(hiv$HardDrugs == 1),]
 hivNoDrug <- hiv[which(hiv$HardDrugs == 0),]
@@ -92,8 +90,8 @@ hivNoDrug <- hiv[which(hiv$HardDrugs == 0),]
 tableOne <- matrix(NA, nrow = 21, ncol = 4)
 colnames(tableOne) <- c("Variable", "All Patients", "Drug Users", "Not Drug Users")
 tableOne[,1] <- c("N","Age", "BMI", "Race", "White","Non-White", "Marijuana Use", "Income", "<10000", "10000-39999",
-                  ">40000", "Smoker", "Alcohol consumption", "3 or less/week", "4 or more/week", "Education", 
-                  "1 year college or less", "4 year college or more","Adherence", "100%", "<100%")
+                  ">40000", "Smoker", "Alcohol consumption", "13 or less/week", "14 or more/week", "Education", 
+                  "HS or less", "1 year of college or more","Adherence", "94% or less", "95% or more")
 
 contFunc <- function(x){
   return(paste(round(mean(x, na.rm = TRUE),2), "±", round(sd(x, na.rm = TRUE),2)))
@@ -135,9 +133,9 @@ tableOne[14:15,2] <- paste(round(prop.table(table(hiv$Drinks))*100,2), "(",table
 tableOne[14:15,3] <- paste(round(prop.table(table(hivDrug$Drinks))*100,2), "(",table(hivDrug$Drinks),")")
 tableOne[14:15,4] <- paste(round(prop.table(table(hivNoDrug$Drinks))*100,2), "(",table(hivNoDrug$Drinks),")")
 
-tableOne[17:18,2] <- paste(round(prop.table(table(hiv$Education))*100,2), "(",table(hiv$Education),")")
-tableOne[17:18,3] <- paste(round(prop.table(table(hivDrug$Education))*100,2), "(",table(hivDrug$Education),")")
-tableOne[17:18,4] <- paste(round(prop.table(table(hivNoDrug$Education))*100,2), "(",table(hivNoDrug$Education),")")
+tableOne[17:18,2] <- paste(round(prop.table(table(hiv$Education))[c(2,1)]*100,2), "(",table(hiv$Education)[c(2,1)],")")
+tableOne[17:18,3] <- paste(round(prop.table(table(hivDrug$Education))[c(2,1)]*100,2), "(",table(hivDrug$Education)[c(2,1)],")")
+tableOne[17:18,4] <- paste(round(prop.table(table(hivNoDrug$Education))[c(2,1)]*100,2), "(",table(hivNoDrug$Education)[c(2,1)],")")
 
 tableOne[20:21,2] <- paste(round(prop.table(table(hiv$Adherence))*100,2), "(",table(hiv$Adherence),")")
 tableOne[20:21,3] <- paste(round(prop.table(table(hivDrug$Adherence))*100,2), "(",table(hivDrug$Adherence),")")
@@ -176,3 +174,6 @@ ggplot(hiv, aes(x = HardDrugs, y = CD4CountDiff)) +
 #save tables
 write.csv(tableOne, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableOne.csv")
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableTwo.csv")
+
+#Save the cleaned data
+write.csv(hiv, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_One/project1_CleanedDataR.csv")
