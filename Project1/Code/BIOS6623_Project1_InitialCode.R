@@ -175,5 +175,40 @@ ggplot(hiv, aes(x = HardDrugs, y = CD4CountDiff)) +
 write.csv(tableOne, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableOne.csv")
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableTwo.csv")
 
-#Save the cleaned data
+#Save data
 write.csv(hiv, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_One/project1_CleanedDataR.csv")
+
+#Change to indicator variables
+#smoking
+hiv$SmokerInd[hiv$Smoker == "Current Smoker"] <- 1
+hiv$SmokerInd[hiv$Smoker == "Never/Former Smoker"] <- 0
+
+#drinks
+hiv$DrinksInd[hiv$Drinks == "14 or more/week"] <- 1
+hiv$DrinksInd[hiv$Drinks == "13 or less/week"] <- 0
+
+#race
+hiv$RaceInd[hiv$Race == "White, Non-Hispanic"] <- 1
+hiv$RaceInd[hiv$Race == "Non White"] <- 0
+
+#education
+hiv$EducationInd[hiv$Education == "1 year of college or more"] <- 1
+hiv$EducationInd[hiv$Education == "HS or less"] <- 0
+
+#adherence
+hiv$AdherenceInd[hiv$Adherence == "95% or more"] <- 1
+hiv$AdherenceInd[hiv$Adherence == "94% or less"] <- 0
+
+#income
+hiv$IncomeMedInd[hiv$Income == "10,000-39,999"] <- 1
+hiv$IncomeMedInd[hiv$Income == "<10,000"| hiv$Income == ">40,000"] <- 0
+
+hiv$IncomeHighInd[hiv$Income == ">40,000"] <- 1
+hiv$IncomeHighInd[hiv$Income == "<10,000"| hiv$Income == "10,000-39,999"] <- 0
+
+#hashv
+hiv$HashVInd[hiv$HashV == "Yes"] <- 1
+hiv$HashVInd[hiv$HashV == "No"] <- 0
+
+#Save the cleaned data
+write.csv(hiv, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_One/project1_CleanedDataSAS.csv")
