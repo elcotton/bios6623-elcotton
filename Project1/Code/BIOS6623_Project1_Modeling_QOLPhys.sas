@@ -32,4 +32,6 @@ proc mcmc data = hiv nbi = 30000 nmc = 100000 plots = all DIC;
 	title "Model 1: Crude model with QOL_PhysDiff and All variables";
 run;
 
+*GOOD TO GO!;
+
 

@@ -82,7 +82,11 @@ hiv$QOL_PhysDiff <- hiv$QOL_PhysYear2-hiv$QOL_PhysBase
 hiv$CD4CountDiff <- hiv$CD4CountYear2-hiv$CD4CountBase
 hiv$logVloadDiff <- hiv$logVLoad2year/hiv$logVLoadBase
 
+#Delete individuals who don't have all four outcome measurements
+hiv <- hiv[which(is.na(hiv$QOL_MentDiff) == F & is.na(hiv$QOL_PhysDiff) == F & 
+                          is.na(hiv$CD4CountDiff) == F & is.na(hiv$logVloadDiff) == F),]
 
+#make smaller datasets for table use
 hivDrug <- hiv[which(hiv$HardDrugs == 1),]
 hivNoDrug <- hiv[which(hiv$HardDrugs == 0),]
 
@@ -151,29 +155,82 @@ tableTwo[,1] <- c("SF-26 Mental QOL Score (Baseline)", "SF 26 Physical QOL Score
                   "SF-26 Mental QOL Score (2 year)", "SF 26 Physical QOL Score(2 year)",
                   "Viral Load (2 year)", "CD4+ T cell count (2 year)")
 
-tableTwo[1:8,2] <- as.character(lapply(hiv[,c(2,3,10,9,17,18,20,19)], contFunc))
-tableTwo[1:8,3] <- as.character(lapply(hivDrug[,c(2,3,10,9,17,18,20,19)], contFunc))
-tableTwo[1:8,4] <- as.character(lapply(hivNoDrug[,c(2,3,10,9,17,18,20,19)], contFunc))
+tableTwo[1:8,2] <- as.character(lapply(hiv[,c(2,3,22,9,17,18,23,19)], contFunc))
+tableTwo[1:8,3] <- as.character(lapply(hivDrug[,c(2,3,22,9,17,18,23,19)], contFunc))
+tableTwo[1:8,4] <- as.character(lapply(hivNoDrug[,c(2,3,22,9,17,18,23,19)], contFunc))
 
-tableTwo <- tableTwo[c(1,5,2,6,3,7,4,8),]
 
-#Make a graph of CD4 count
+#Table with the differences
+tableThree <- matrix(NA, nrow = 12, ncol = 4)
+colnames(tableThree) <- c("Variable", "All Patients", "Drug Users", "Not Drug Users")
+
+tableThree[,1] <- c("SF-26 Mental QOL Score (Baseline)", "SF 26 Physical QOL Score(Baseline)",
+                    "Viral Load (Baseline)", "CD4+ T cell count (Baseline)",
+                    "SF-26 Mental QOL Score (2 year)", "SF 26 Physical QOL Score(2 year)",
+                    "Viral Load (2 year)", "CD4+ T cell count (2 year)", "Mental Diff",
+                    "Phys Diff", "Viral Load Diff", "CD4+ Diff")
+
+tableThree[1:12,2] <- as.character(lapply(hiv[,c(2,3,22,9,17,18,23,19,24,25,27,26)], contFunc))
+tableThree[1:12,3] <- as.character(lapply(hivDrug[,c(2,3,22,9,17,18,23,19,24,25,27,26)], contFunc))
+tableThree[1:12,4] <- as.character(lapply(hivNoDrug[,c(2,3,22,9,17,18,23,19,24,25,27,26)], contFunc))
+
+#Make graphs
 library(ggplot2)
 
-hiv$HardDrugs <- as.factor(hiv$HardDrugs)
-ggplot(hiv, aes(x = HardDrugs, y = CD4CountDiff)) +
-  geom_boxplot(alpha = 0.7, fill = "darkslategray3") + 
-  scale_y_continuous(name = "Difference in CD4+ Count (Year 2-Baseline)") +
+hiv$HardDrugs[hiv$HardDrugs == 1] <- "Hard drug users"
+hiv$HardDrugs[hiv$HardDrugs == 0] <- "Not hard drug users"
+
+phys <- ggplot(hiv, aes(x = HardDrugs, y = QOL_PhysDiff)) +
+  geom_boxplot(alpha = 0.7, fill = "olivedrab3") + 
+  scale_y_continuous(name = "Difference in Physical QOL Score (Year 2-Baseline)") +
   scale_x_discrete(name = "Hard Drug Use") +
-  ggtitle("Graph 1:\n Change in CD4+ Count by Hard Drug Use") +
+  ggtitle("Graph 2:\n Change in Physical Score QOL by Hard Drug Use") +
   theme_bw() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
         axis.title = element_text(face = "bold"),
         legend.title = element_blank())
 
+ment <- ggplot(hiv, aes(x = HardDrugs, y = QOL_MentDiff)) +
+  geom_boxplot(alpha = 0.7, fill = "darkgoldenrod1") + 
+  scale_y_continuous(name = "Difference in Mental QOL Score (Year 2-Baseline)") +
+  scale_x_discrete(name = "Hard Drug Use") +
+  ggtitle("Graph 1:\n Change in Mental QOL Score by Hard Drug Use") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank())
+
+cd4 <- ggplot(hiv, aes(x = HardDrugs, y = CD4CountDiff)) +
+  geom_boxplot(alpha = 0.7, fill = "darkslategray3") + 
+  scale_y_continuous(name = "Difference in CD4+ Count (Year 2-Baseline)") +
+  scale_x_discrete(name = "Hard Drug Use") +
+  ggtitle("Graph 4:\n Change in CD4+ Count by Hard Drug Use") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank())
+
+vload <- ggplot(hiv, aes(x = HardDrugs, y = logVloadDiff)) +
+  geom_boxplot(alpha = 0.7, fill = "palevioletred3") + 
+  scale_y_continuous(name = "Difference in log(Viral Load) (Year 2-Baseline)") +
+  scale_x_discrete(name = "Hard Drug Use") +
+  ggtitle("Graph 3:\n Change in log(Viral Load) by Hard Drug Use") +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.title = element_blank())
+
+library(cowplot)
+plot_grid(ment,phys,vload,cd4)
+
+hiv$HardDrugs[hiv$HardDrugs == "Hard drug users"] <- 1
+hiv$HardDrugs[hiv$HardDrugs == "Not hard drug users"] <- 0
+
+
 #save tables
 write.csv(tableOne, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableOne.csv")
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableTwo.csv")
+write.csv(tableThree, "C:/Repositories/bios6623-elcotton/Project1/Reports/tableThree.csv")
 
 #Save data
 write.csv(hiv, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_One/project1_CleanedDataR.csv")
@@ -212,3 +269,8 @@ hiv$HashVInd[hiv$HashV == "No"] <- 0
 
 #Save the cleaned data
 write.csv(hiv, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_One/project1_CleanedDataSAS.csv")
+
+
+
+
+
