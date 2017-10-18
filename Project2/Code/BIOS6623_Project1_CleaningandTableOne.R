@@ -9,8 +9,7 @@ library(haven)
 
 
 #import the data
-va <- read.sas7bdat("~/BIOS6623_AdvancedData/Project_Two/vadata1.sas7bdat")
-#va <- read_sas("~/BIOS6623_AdvancedData/Project_Two/vadata1.sas7bdat")
+va <- read_sas("~/BIOS6623_AdvancedData/Project_Two/vadata1.sas7bdat")
 
 ####Look at the variables
 #1-44, about 500-600 in each group
@@ -24,8 +23,7 @@ table(va$sixmonth)
 #0 and 1, and 2 2s---miscoded?
 #change 2s to NAs---SHOULD BE DELETED?
 #1510 NAs
-va[va$proced == 2] <- NULL
-table(va$proced)
+va <- va[grep(2, va$proced, invert = TRUE),]
 
 #Very few 1's and 5's (>20)
 #2160 NA
@@ -78,6 +76,9 @@ va$Current <- NA
 va$Current[va$sixmonth == 39] <- 1
 va$Current[va$sixmonth != 39] <- 0
 
+###Calculate the BMI
+va$bmiCalc <- va$weight/(va$height^2)*703
+
 #Export the file
 write.csv(va, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Two/cleanedData.csv")
 
@@ -92,7 +93,7 @@ vaNotCurr <- va[va$Current == 0,]
 ###Make tableOne, 1 column for old and one for new
 tableOne <- matrix(NA, ncol = 4, nrow = 17)
 colnames(tableOne) <- c("Variable","All Months", "Current Month", "Past Months")
-tableOne[,1] <- c("N", "Procedure", "Valve Surgery", "Cabbage Surgery", "Missing",
+tableOne[,1] <- c("N", "Procedure", "Valve Surgery", "CABG Surgery", "Missing",
                   "ASA", "1", "2", "3", "4", "5", "Missing", "Weight", "Height",
                   "BMI", "Albumin", "30 day mortality")
 
@@ -121,9 +122,9 @@ tableOne[14,2] <- contFunc(va$height)
 tableOne[14,3] <- contFunc(vaCurr$height)
 tableOne[14,4] <- contFunc(vaNotCurr$height)
 
-tableOne[15,2] <- contFunc(va$bmi)
-tableOne[15,3] <- contFunc(vaCurr$bmi)
-tableOne[15,4] <- contFunc(vaNotCurr$bmi)
+tableOne[15,2] <- contFunc(va$bmiCalc)
+tableOne[15,3] <- contFunc(vaCurr$bmiCalc)
+tableOne[15,4] <- contFunc(vaNotCurr$bmiCalc)
 
 tableOne[16,2] <- contFunc(va$albumin)
 tableOne[16,3] <- contFunc(vaCurr$albumin)
@@ -146,11 +147,8 @@ tableTwo[,3] <- table(vaCurr$hospcode)
 tableTwo[,4] <- round(table(vaCurr$hospcode,vaCurr$death30)[,2]/table(vaCurr$hospcode)*100, 2)
 tableTwo[,5] <- round(table(vaCurr$hospcode, vaCurr$proced)[,2]/table(vaCurr$hospcode)*100,2)
 tableTwo[,6] <- round(table(vaCurr$hospcode, vaCurr$asa)[,4]/table(vaCurr$hospcode)*100,2)
-aveBMI <- aggregate(va$bmi, list(va$hospcode), summary)
+aveBMI <- aggregate(va$bmiCalc, list(va$hospcode), summary)
 tableTwo[,7] <- round(aveBMI$x[,4],2)
 
 #Save tableOne
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableTwo.csv")
-
-
-#####Fix BMI and delete the procedure = 2 people!
