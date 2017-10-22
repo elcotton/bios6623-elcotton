@@ -66,7 +66,8 @@ table(vaHMiss$death30)
 
 #Subset to those who don't have albumin
 vaAMiss <- va[is.na(va$albumin),]
-#Does not differ on month, hosp, asa, death30
+vaANotMiss <- va[is.na(va$albumin) == F,]
+#Missing at random! Based on ASA score
 
 ###Appears to be missing completely at random for missing data!
 
@@ -152,3 +153,8 @@ tableTwo[,7] <- round(aveBMI$x[,4],2)
 
 #Save tableOne
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableTwo.csv")
+
+
+###Fix BMI
+### 39 month hospitals 1-16!
+test <- va[va$hospcode == c(1:16),]
