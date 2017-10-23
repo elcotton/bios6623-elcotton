@@ -77,6 +77,10 @@ va$Current <- NA
 va$Current[va$sixmonth == 39] <- 1
 va$Current[va$sixmonth != 39] <- 0
 
+###Fixed Weight
+test <- va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5]
+va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5] <- va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5]*2.2
+
 ###Calculate the BMI
 va$bmiCalc <- va$weight/(va$height^2)*703
 
@@ -157,4 +161,4 @@ write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableTwo
 
 ###Fix BMI
 ### 39 month hospitals 1-16!
-test <- va[va$hospcode == c(1:16),]
+
