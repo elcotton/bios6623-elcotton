@@ -7,86 +7,39 @@
 library(dplyr)
 library(haven)
 
-
 #import the data
 va <- read_sas("~/BIOS6623_AdvancedData/Project_Two/vadata1.sas7bdat")
 
-####Look at the variables
-#1-44, about 500-600 in each group
-#None missing
-table(va$hospcode)
 
-#34-39, with 39 being the newest
-#None missing
-table(va$sixmonth)
-
-#0 and 1, and 2 2s---miscoded?
-#change 2s to NAs---SHOULD BE DELETED?
-#1510 NAs
+###Clean the data
+#Delete the proced = 2 people
 va <- va[grep(2, va$proced, invert = TRUE),]
 
-#Very few 1's and 5's (>20)
-#2160 NA
-table(va$asa)
+#fix the funny Weight values
+va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5] <- va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5]*2.2
 
-#Relatively normal-no real outliers
-#1855 NA
-summary(va$weight)
-hist(va$weight)
+#Calculate the BMI by hand
+va$bmiCalc <- va$weight/(va$height^2)*703
 
-#Beautifully normal
-#1855 NA
-summary(va$height)
-hist(va$height)
-
-#Two very large values, one very small value
-#Are > 70 or < 3 possible?---SET TO NA??
-#1855 NA
-summary(va$bmi)
-boxplot(va$bmi)
-
-#Very Normal
-#16498 NAs
-summary(va$albumin)
-hist(va$albumin)
-
-#Not very many deaths (about 870ish)
-#No NAs
-table(va$death30)
+#Switch ASA to 0 (if 1,2,3) or 1 (if 4,5)
+va$asa[va$asa == 1|va$asa == 2|va$asa == 3] <- 0
+va$asa[va$asa == 4|va$asa == 5] <- 1
 
 ###Investigate the missing data
-#Subset to those who have missing height
-vaHMiss <- va[is.na(va$weight),]
-
-#Its the same 1855 people missing heigh weight and BMI
-#Does not differ on month period,asa, death30
-#162 are from hospital 30, ~40 in the rest
-table(vaHMiss$death30)
-
-
 #Subset to those who don't have albumin
 vaAMiss <- va[is.na(va$albumin),]
 vaANotMiss <- va[is.na(va$albumin) == F,]
 #Missing at random! Based on ASA score
-
-###Appears to be missing completely at random for missing data!
-
 
 ###Add a column that is for current data and old data
 va$Current <- NA
 va$Current[va$sixmonth == 39] <- 1
 va$Current[va$sixmonth != 39] <- 0
 
-###Fixed Weight
-test <- va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5]
-va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5] <- va[va$hospcode >=1 & va$hospcode <=16 & va$sixmonth == 39,5]*2.2
-
-###Calculate the BMI
-va$bmiCalc <- va$weight/(va$height^2)*703
-
 #Export the file
 write.csv(va, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Two/cleanedData.csv")
 
+###Prepare the data for table making
 #Change NA to missing for table making
 va$proced[is.na(va$proced)] <- "missing"
 va$asa[is.na(va$asa)] <- "missing"
@@ -96,10 +49,10 @@ vaCurr <- va[va$Current == 1,]
 vaNotCurr <- va[va$Current == 0,]
 
 ###Make tableOne, 1 column for old and one for new
-tableOne <- matrix(NA, ncol = 4, nrow = 17)
+tableOne <- matrix(NA, ncol = 4, nrow = 14)
 colnames(tableOne) <- c("Variable","All Months", "Current Month", "Past Months")
 tableOne[,1] <- c("N", "Procedure", "Valve Surgery", "CABG Surgery", "Missing",
-                  "ASA", "1", "2", "3", "4", "5", "Missing", "Weight", "Height",
+                  "ASA", "1", "2", "Missing", "Weight", "Height",
                   "BMI", "Albumin", "30 day mortality")
 
 contFunc <- function(x){
@@ -115,50 +68,44 @@ tableOne[3:5,2] <- paste(round(prop.table(table(va$proced))[c(1,2,3)]*100,2), "(
 tableOne[3:5,3] <- paste(round(prop.table(table(vaCurr$proced))[c(1,2,3)]*100,2), "(",table(vaCurr$proced)[c(1,2,3)],")")
 tableOne[3:5,4] <- paste(round(prop.table(table(vaNotCurr$proced))[c(1,2,3)]*100,2), "(",table(vaNotCurr$proced)[c(1,2,3)],")")
 
-tableOne[7:12,2] <- paste(round(prop.table(table(va$asa))[c(1,2,3)]*100,2), "(",table(va$asa)[c(1,2,3)],")")
-tableOne[7:12,3] <- paste(round(prop.table(table(vaCurr$asa))[c(1,2,3)]*100,2), "(",table(vaCurr$asa)[c(1,2,3)],")")
-tableOne[7:12,4] <- paste(round(prop.table(table(vaNotCurr$asa))[c(1,2,3)]*100,2), "(",table(vaNotCurr$asa)[c(1,2,3)],")")
+tableOne[7:9,2] <- paste(round(prop.table(table(va$asa))[c(1,2,3)]*100,2), "(",table(va$asa)[c(1,2,3)],")")
+tableOne[7:9,3] <- paste(round(prop.table(table(vaCurr$asa))[c(1,2,3)]*100,2), "(",table(vaCurr$asa)[c(1,2,3)],")")
+tableOne[7:9,4] <- paste(round(prop.table(table(vaNotCurr$asa))[c(1,2,3)]*100,2), "(",table(vaNotCurr$asa)[c(1,2,3)],")")
 
-tableOne[13,2] <- contFunc(va$weight)
-tableOne[13,3] <- contFunc(vaCurr$weight)
-tableOne[13,4] <- contFunc(vaNotCurr$weight)
+tableOne[10,2] <- contFunc(va$weight)
+tableOne[10,3] <- contFunc(vaCurr$weight)
+tableOne[10,4] <- contFunc(vaNotCurr$weight)
 
-tableOne[14,2] <- contFunc(va$height)
-tableOne[14,3] <- contFunc(vaCurr$height)
-tableOne[14,4] <- contFunc(vaNotCurr$height)
+tableOne[11,2] <- contFunc(va$height)
+tableOne[11,3] <- contFunc(vaCurr$height)
+tableOne[11,4] <- contFunc(vaNotCurr$height)
 
-tableOne[15,2] <- contFunc(va$bmiCalc)
-tableOne[15,3] <- contFunc(vaCurr$bmiCalc)
-tableOne[15,4] <- contFunc(vaNotCurr$bmiCalc)
+tableOne[12,2] <- contFunc(va$bmiCalc)
+tableOne[12,3] <- contFunc(vaCurr$bmiCalc)
+tableOne[12,4] <- contFunc(vaNotCurr$bmiCalc)
 
-tableOne[16,2] <- contFunc(va$albumin)
-tableOne[16,3] <- contFunc(vaCurr$albumin)
-tableOne[16,4] <- contFunc(vaNotCurr$albumin)
+tableOne[13,2] <- contFunc(va$albumin)
+tableOne[13,3] <- contFunc(vaCurr$albumin)
+tableOne[13,4] <- contFunc(vaNotCurr$albumin)
 
-tableOne[17,2] <- paste(round(prop.table(table(va$death30))[2]*100,2), "(",table(va$death30)[2],")")
-tableOne[17,3] <- paste(round(prop.table(table(vaCurr$death30))[2]*100,2), "(",table(vaCurr$death30)[2],")")
-tableOne[17,4] <- paste(round(prop.table(table(vaNotCurr$death30))[2]*100,2), "(",table(vaNotCurr$death30)[2],")")
+tableOne[14,2] <- paste(round(prop.table(table(va$death30))[2]*100,2), "(",table(va$death30)[2],")")
+tableOne[14,3] <- paste(round(prop.table(table(vaCurr$death30))[2]*100,2), "(",table(vaCurr$death30)[2],")")
+tableOne[14,4] <- paste(round(prop.table(table(vaNotCurr$death30))[2]*100,2), "(",table(vaNotCurr$death30)[2],")")
 
 #Save tableOne
 write.csv(tableOne, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableOne.csv")
 
 ###Make table 2, the deaths by the hospital
 #Only for the last 6 months
-tableTwo <- matrix(NA, nrow = 44, ncol = 7)
-colnames(tableTwo) <- c("Hospital", "Number Died", "Number Seen", "Death Rate", "CABG Surgery %", "% of ASA = 4", " Average BMI")
+tableTwo <- matrix(NA, nrow = 44, ncol = 4)
+colnames(tableTwo) <- c("Hospital", "Number Died", "Number Seen", "Death Rate")
 tableTwo[,1] <- seq(1,44, by =1)
 tableTwo[,2] <- table(vaCurr$hospcode,vaCurr$death30)[,2]
 tableTwo[,3] <- table(vaCurr$hospcode)
 tableTwo[,4] <- round(table(vaCurr$hospcode,vaCurr$death30)[,2]/table(vaCurr$hospcode)*100, 2)
-tableTwo[,5] <- round(table(vaCurr$hospcode, vaCurr$proced)[,2]/table(vaCurr$hospcode)*100,2)
-tableTwo[,6] <- round(table(vaCurr$hospcode, vaCurr$asa)[,4]/table(vaCurr$hospcode)*100,2)
-aveBMI <- aggregate(va$bmiCalc, list(va$hospcode), summary)
-tableTwo[,7] <- round(aveBMI$x[,4],2)
 
 #Save tableOne
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableTwo.csv")
 
 
-###Fix BMI
-### 39 month hospitals 1-16!
 
