@@ -114,19 +114,19 @@ tableTwo <- read.csv("C:/Repositories/bios6623-elcotton/Project2/Reports/tableTw
 tableTwo$X <- NULL
 
 #Add the expected death rate found above
-tableTwo$ExpectedDR <- c(expProp$x[1:29], NA, expProp$x[30:43])
+tableTwo$ExpectedDR <- round(c(expProp$x[1:29], NA, expProp$x[30:43]),2)
 
 #add the CI
 tableTwo$CI <- c(quantProp[1:29], NA, quantProp[30:43])
 
 #add the observed/expected ratio
-tableTwo$ObsoverExp <- tableTwo$Death.Rate/tableTwo$ExpectedDR
+tableTwo$ObsoverExp <- round(tableTwo$Death.Rate/tableTwo$ExpectedDR,2)
 
 #add a column that says if that ratio is above 1.2 or below 0.8
 tableTwo$SuperDifferent <- NULL
-tableTwo$SuperDifferent[tableTwo$ObsoverExp >= 1.2] <- "Too High"
+tableTwo$SuperDifferent[tableTwo$ObsoverExp >= 1.2] <- "High"
 tableTwo$SuperDifferent[tableTwo$ObsoverExp < 1.2 & tableTwo$ObsoverExp > 0.8] <- "Very close"
-tableTwo$SuperDifferent[tableTwo$ObsoverExp <= 0.8] <- "Too Low"
+tableTwo$SuperDifferent[tableTwo$ObsoverExp <= 0.8] <- "Low"
 tableTwo$SuperDifferent[is.na(tableTwo$ObsoverExp)] <- NA
 
 #save final table

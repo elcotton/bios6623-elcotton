@@ -52,7 +52,7 @@ vaNotCurr <- va[va$Current == 0,]
 tableOne <- matrix(NA, ncol = 4, nrow = 14)
 colnames(tableOne) <- c("Variable","All Months", "Current Month", "Past Months")
 tableOne[,1] <- c("N", "Procedure", "Valve Surgery", "CABG Surgery", "Missing",
-                  "ASA", "1", "2", "Missing", "Weight", "Height",
+                  "ASA", "0 (1,2,3)", "1 (4 or 5)", "Missing", "Weight", "Height",
                   "BMI", "Albumin", "30 day mortality")
 
 contFunc <- function(x){
