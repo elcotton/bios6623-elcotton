@@ -36,13 +36,13 @@ va$Current <- NA
 va$Current[va$sixmonth == 39] <- 1
 va$Current[va$sixmonth != 39] <- 0
 
-#Export the file
+#Export the cleaned datafile
 write.csv(va, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Two/cleanedData.csv")
 
 ###Prepare the data for table making
 #Change NA to missing for table making
 va$proced[is.na(va$proced)] <- "missing"
-va$asa[is.na(va$asa)] <- "missing"
+va$asa[which(is.na(va$asa) == TRUE)] <- "missing"
 
 ###Subset data into both datasets
 vaCurr <- va[va$Current == 1,]
@@ -104,8 +104,10 @@ tableTwo[,2] <- table(vaCurr$hospcode,vaCurr$death30)[,2]
 tableTwo[,3] <- table(vaCurr$hospcode)
 tableTwo[,4] <- round(table(vaCurr$hospcode,vaCurr$death30)[,2]/table(vaCurr$hospcode)*100, 2)
 
-#Save tableOne
+#Save tabletwo
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableTwo.csv")
 
+###Should actual death rates be calculated for everyone in the last
+#six months or just those with complete cases
 
 
