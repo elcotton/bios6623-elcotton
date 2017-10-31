@@ -124,9 +124,9 @@ tableTwo$ObsoverExp <- round(tableTwo$Death.Rate/tableTwo$ExpectedDR,2)
 
 #add a column that says if that ratio is above 1.2 or below 0.8
 tableTwo$SuperDifferent <- NULL
-tableTwo$SuperDifferent[tableTwo$ObsoverExp >= 1.2] <- "High"
-tableTwo$SuperDifferent[tableTwo$ObsoverExp < 1.2 & tableTwo$ObsoverExp > 0.8] <- "Very close"
-tableTwo$SuperDifferent[tableTwo$ObsoverExp <= 0.8] <- "Low"
+tableTwo$SuperDifferent[tableTwo$ObsoverExp >= 1.3] <- "High"
+tableTwo$SuperDifferent[tableTwo$ObsoverExp < 1.3 & tableTwo$ObsoverExp > 0.7] <- "Very close"
+tableTwo$SuperDifferent[tableTwo$ObsoverExp <= 0.7] <- "Low"
 tableTwo$SuperDifferent[is.na(tableTwo$ObsoverExp)] <- NA
 
 #save final table
@@ -139,8 +139,8 @@ ggplot(tableTwo, aes(x = Hospital, y = ObsoverExp)) +
   geom_point(size = 3, color = "dodgerblue")+
   theme_bw() +
   scale_x_discrete(name = "Hospital") +
-  scale_y_continuous(name = "Actual over Expected Death Rate Ratio") +
-  labs(title = "Ratio of Actual over Expected Death Rates by Hospital")+
+  scale_y_continuous(name = "Observed/Predicted Mortality Rate Ratio") +
+  labs(title = "Graph 1: Observed/Predicted Mortality Rates by Hospital")+
   theme(text = element_text(size=12)) +
   theme(plot.title = element_text(size = rel(2), hjust = 0.5))+ 
   theme(axis.title = element_text(face = "bold"))

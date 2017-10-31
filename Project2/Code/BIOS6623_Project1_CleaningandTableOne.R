@@ -39,6 +39,24 @@ va$Current[va$sixmonth != 39] <- 0
 #Export the cleaned datafile
 write.csv(va, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Two/cleanedData.csv")
 
+
+###Comparing missingness in outcomes among complete cases and not
+vaSub <- va[,c(1,2,3,4,9,10)]
+vaNoMiss <- vaSub[complete.cases(vaSub),]
+vaMiss <- vaSub[!complete.cases(vaSub),]
+
+vaNoMiss39 <- vaNoMiss[vaNoMiss$sixmonth == 39,]
+vaNoMiss39$Missing <- "No"
+vaMiss39 <- vaMiss[vaMiss$sixmonth == 39,]
+vaMiss39$Missing <- "Yes"
+
+vaNew <- rbind(vaNoMiss39,vaMiss39)
+
+table(vaNew$Missing, vaNew$death30)
+#Don't differ that much!
+28/(918+28)
+117/(3361+117)
+
 ###Prepare the data for table making
 #Change NA to missing for table making
 va$proced[is.na(va$proced)] <- "missing"
@@ -107,7 +125,5 @@ tableTwo[,4] <- round(table(vaCurr$hospcode,vaCurr$death30)[,2]/table(vaCurr$hos
 #Save tabletwo
 write.csv(tableTwo, "C:/Repositories/bios6623-elcotton/Project2/Reports/tableTwo.csv")
 
-###Should actual death rates be calculated for everyone in the last
-#six months or just those with complete cases
 
 
