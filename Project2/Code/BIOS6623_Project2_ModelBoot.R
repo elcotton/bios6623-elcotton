@@ -8,6 +8,7 @@ library(ggplot2)
 #import the data
 va <- read.csv("C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Two/cleanedData.csv")
 
+
 ###Run the logistic model
 #without albumin
 model <- glm(death30~asa + bmiCalc + proced,family = binomial(link = "logit"),
@@ -38,38 +39,43 @@ va39 <- vaSub[vaSub$sixmonth == 39,]
 expProp <- aggregate(va39$propPred,list(va39$hospcode),mean)*100
 
 
-###Do the bootstrapping
-#create empty vector to fill with proportions
-boot.proportions<-matrix(NA, nrow = 10000, ncol = 43)
+####Below is the code for bootstrapping
+###It was ran once and the results were saved as proportions.csv
+###Those results are uploaded and used for the rest of the code
+###since the bootstrapping takes a long time to run
+# ###Do the bootstrapping
+# #create empty vector to fill with proportions
+# boot.proportions<-matrix(NA, nrow = 10000, ncol = 43)
+# 
+# #run the bootstrap
+# #look at ratio of observed/exp
+# for(i in 1:10000){
+#   set.seed(i)
+#   #sample new data
+#   boot.vec <- sample(nrow(vaSub), replace = T)
+#   boot.sp <- vaSub[boot.vec,]
+#   
+#   #run the logistic regression
+#   model <- glm(death30~asa + bmiCalc + proced,family = binomial(link = "logit"),
+#                data = boot.sp)
+#   coeff <- model$coefficients
+#   
+#   #get the fitted values
+#   logit <- coeff[1] + vaSub$asa*coeff[2] + vaSub$bmiCalc*coeff[3] +  vaSub$proced*coeff[4]
+#   vaSub$proportions <- inv.logit(logit)
+#   
+#   #save aggregated values for each hospital in boot proportions
+#   #Ponder if this hospital code is correct
+#   boot.sp39 <- vaSub[vaSub$sixmonth == 39,]
+#   boot.proportions[i,] <- aggregate(boot.sp39$proportions,list(boot.sp39$hospcode),mean)[,2]*100
+#   
+#   print(i)
+# }
+# 
+# #Save the bootstrap so I don't have to run it again
+# write.csv(boot.proportions,"C:/Repositories/bios6623-elcotton/Project2/Reports/proportions.csv")
 
-#run the bootstrap
-#look at ratio of observed/exp
-for(i in 1:10000){
-  set.seed(i)
-  #sample new data
-  boot.vec <- sample(nrow(vaSub), replace = T)
-  boot.sp <- vaSub[boot.vec,]
-  
-  #run the logistic regression
-  model <- glm(death30~asa + bmiCalc + proced,family = binomial(link = "logit"),
-               data = boot.sp)
-  coeff <- model$coefficients
-  
-  #get the fitted values
-  logit <- coeff[1] + vaSub$asa*coeff[2] + vaSub$bmiCalc*coeff[3] +  vaSub$proced*coeff[4]
-  vaSub$proportions <- inv.logit(logit)
-  
-  #save aggregated values for each hospital in boot proportions
-  #Ponder if this hospital code is correct
-  boot.sp39 <- vaSub[vaSub$sixmonth == 39,]
-  boot.proportions[i,] <- aggregate(boot.sp39$proportions,list(boot.sp39$hospcode),mean)[,2]*100
-  
-  print(i)
-}
-
-#Save the bootstrap so I don't have to run it again
-write.csv(boot.proportions,"C:/Repositories/bios6623-elcotton/Project2/Reports/proportions.csv")
-
+###Get results from the bootstrap
 #upload the bootstrap
 boot.proportions <- read.csv("C:/Repositories/bios6623-elcotton/Project2/Reports/proportions.csv")
 boot.proportions$X <- NULL
@@ -81,28 +87,8 @@ for(i in 1:43){
                         round(quantile(boot.proportions[,i], prob = c(0.025,0.975))[2],2), ")", sep = "") 
 }
 
-#Save these percentiles and add them to table 2
+#Save these percentiles, will be add them to table 2
 expCI <- cbind(expProp, quantProp)
-
-###Make graph of results
-#orders the hosptials by highest and lowest medians
-test <- apply(boot.proportions,2, FUN = quantile, probs = c(0.025,0.5,0.975))
-plot <- data.frame(t(test))
-names(plot) <- c('lower','mid','upper')
-plot <- cbind(hosp=as.character(c(1:29,31:44)),plot)
-plot$hosp <- factor(plot$hosp, levels=plot$hosp[order(plot$mid)])
-plot
-
-#plot the medians and CIs
-ggplot(plot,aes(x=hosp,y=mid))+geom_point()+
-  geom_errorbar(aes(ymin=lower,ymax=upper,width=0.2)) +
-  theme_bw() +
-  scale_x_discrete(name = "Hospital") +
-  scale_y_continuous(name = "Median Expected Death Rate") +
-  labs(title = "Expected Death Rate by Hospital")+
-  theme(text = element_text(size=12)) +
-  theme(plot.title = element_text(size = rel(2), hjust = 0.5))+ 
-  theme(axis.title = element_text(face = "bold"))
 
 
 ###Make table two
@@ -143,4 +129,6 @@ ggplot(tableTwo, aes(x = Hospital, y = ObsoverExp)) +
   labs(title = "Graph 1: Observed/Predicted Mortality Rates by Hospital")+
   theme(text = element_text(size=12)) +
   theme(plot.title = element_text(size = rel(2), hjust = 0.5))+ 
-  theme(axis.title = element_text(face = "bold"))
+  theme(axis.title = element_text(face = "bold"))+
+  geom_hline(yintercept = 1.2, col = "red") +
+  geom_hline(yintercept = 0.8, col = "blue")

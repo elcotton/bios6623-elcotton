@@ -40,22 +40,30 @@ va$Current[va$sixmonth != 39] <- 0
 write.csv(va, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Two/cleanedData.csv")
 
 
-###Comparing missingness in outcomes among complete cases and not
+###Comparing missingness in outcomes among complete cases and incomplete cases
+#look at all time periods
+#Does not differ very much
 vaSub <- va[,c(1,2,3,4,9,10)]
 vaNoMiss <- vaSub[complete.cases(vaSub),]
+vaNoMiss$Missing <- "No"
 vaMiss <- vaSub[!complete.cases(vaSub),]
+vaMiss$Missing <- "Yes"
+vaTest <- rbind(vaNoMiss,vaMiss)
+table(vaTest$Missing,vaTest$death30)
+prop1 <- 678/(678+20668)
+prop2 <- 190/(190+4982)
 
+#look at just period 39
+#does not differ very much
 vaNoMiss39 <- vaNoMiss[vaNoMiss$sixmonth == 39,]
 vaNoMiss39$Missing <- "No"
 vaMiss39 <- vaMiss[vaMiss$sixmonth == 39,]
 vaMiss39$Missing <- "Yes"
-
 vaNew <- rbind(vaNoMiss39,vaMiss39)
 
 table(vaNew$Missing, vaNew$death30)
-#Don't differ that much!
-28/(918+28)
-117/(3361+117)
+prop11 <- 28/(918+28)
+prop12 <- 117/(3361+117)
 
 ###Prepare the data for table making
 #Change NA to missing for table making
