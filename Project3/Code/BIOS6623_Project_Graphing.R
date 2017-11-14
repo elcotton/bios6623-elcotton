@@ -98,10 +98,11 @@ ggplot(data = blockR, aes(x = age, y = blockR, group = id, color = demind)) +
   theme(legend.title = element_text(face = "bold")) +
   theme(legend.title.align=0.5) 
 
-
-
-
-
+# #save these datasets
+# write.csv(animal, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Three/Project3Data_Animal.csv")
+# write.csv(blockR, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Three/Project3Data_Block.csv")
+# write.csv(mentLogI, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Three/Project3Data_LogI.csv")
+# write.csv(mentLogII, "C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Three/Project3Data_LogII.csv")
 
 
 
