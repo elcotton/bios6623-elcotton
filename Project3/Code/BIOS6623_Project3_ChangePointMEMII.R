@@ -17,11 +17,11 @@ ment$ageDiff <- ment$age-ment$ageonset
 
 mentDem <- ment[ment$demind == 1,]
 
-LogII <- mentDem[!is.na(mentDem$logmemII),]
-keep <- names(which(table(LogII$id)>=3))
-LogII  <- LogII[LogII$id %in% keep,]
+LogIIgraph <- mentDem[!is.na(mentDem$logmemII),]
+keep <- names(which(table(LogIIgraph$id)>=3))
+LogIIgraph  <- LogIIgraph[LogIIgraph$id %in% keep,]
 
-ggplot(data = LogI , aes(x = ageDiff, y = logmemII, group = id)) +
+ggplot(data = LogIIgraph , aes(x = ageDiff, y = logmemII, group = id)) +
   geom_line() + 
   theme_bw() +
   scale_x_continuous(name = "Year before Dx") +
@@ -34,12 +34,17 @@ ggplot(data = LogI , aes(x = ageDiff, y = logmemII, group = id)) +
 
 ###Following camille's example-Animals
 #Data
+LogII <- ment[!is.na(ment$logmemII),]
+keep <- names(which(table(LogII$id)>=3))
+LogII <- LogII[LogII$id %in% keep,]
+
 patid<-as.character(LogII$id)
-t1<-LogII$ageDiff
+t1<-LogII$age-59
+ageDiff <- ifelse(is.na(LogII$ageDiff),0,LogII$ageDiff)
 y<-LogII$logmemII
 ses <- LogII$SES
 gender <- as.factor(LogII$gender)
-age <- LogII$age
+demind <- LogII$demind
 
 #Sequence of change points to consider
 cps<-seq(-15,-0.1,0.1)
@@ -52,8 +57,8 @@ cp.search_and_fit<-function(patid, t1, y, cps,ses,gender,age){
   
   #Search for the CP
   for (i in 1:length(cps)){cp<-cps[i]
-  t2<-ifelse(t1>cp, t1-cp, 0)
-  cp.model<-lme(y~t1+t2 + gender + ses + age, random=~1|patid, method='ML')
+  t2<-ifelse(ageDiff>cp, ageDiff-cp, 0)
+  cp.model<-lme(y~t1+t2 + gender + ses + demind + demind*t1, random=~1|patid, method='ML')
   ll[i,]<-c(cp,logLik(cp.model))
   }
   
@@ -65,8 +70,8 @@ cp.search_and_fit<-function(patid, t1, y, cps,ses,gender,age){
   print(cp)
   
   #Fit the final model
-  t2<-ifelse(t1>cp, t1-cp, 0)
-  cp.model<-lme(y~t1+t2+ gender + ses + age, random=~1|patid)
+  t2<-ifelse(ageDiff>cp, ageDiff-cp, 0)
+  cp.model<-lme(y~t1+t2 + gender + ses + demind + demind*t1, random=~1|patid, method='ML')
   return(list(cp=cp, model=cp.model))}
 
 
