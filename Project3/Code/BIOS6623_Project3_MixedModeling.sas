@@ -100,6 +100,7 @@ proc mixed data=animal;
 	repeated age_Cat/subject = id type = SP(POW)(age); 
 run;
 
+
 *RI and repeated AR(1): AIC = 7910.3;
 proc mixed data=animal;
 	class gender id age_Cat demind; 
@@ -107,8 +108,6 @@ proc mixed data=animal;
 	random intercept/subject = id; 
 	repeated age_Cat/subject = id type = AR(1); 
 run;
-
-
 
 *run mixed models on BlockR;
 *RI: AIC = 9048.7;

@@ -43,7 +43,32 @@ BIOS6623_Project3_TableMaking
 BIOS6623_Project3_Graphing
    This file imports the clean data and generates "spaghetti" plots for each of the outcomes.
    It also subsets the clean data for each outcome to only those individuals who have 3 or
-   more outcome measurements. 
+   more outcome measurements.
+
+BIOS_Project3_ChangePointAnimal
+   This file imports the clean data and generates a "spaghetti" plot of the animal score and time to 
+   dementia diagnosis for individuals who had a dementia diagnosis. It also finds the change point 
+   that is used in the mixed modelling.
+
+BIOS_Project3_ChangePointBlockR
+   This file imports the clean data and generates a "spaghetti" plot of the blockR score and time to 
+   dementia diagnosis for individuals who had a dementia diagnosis. It also finds the change point 
+   that is used in the mixed modelling.
+
+BIOS_Project3_ChangePointMEMI
+   This file imports the clean data and generates a "spaghetti" plot of the memI score and time to 
+   dementia diagnosis for individuals who had a dementia diagnosis. It also finds the change point 
+   that is used in the mixed modelling.
+
+BIOS_Project3_ChangePointMEMII
+   This file imports the clean data and generates a "spaghetti" plot of the memII score and time to 
+   dementia diagnosis for individuals who had a dementia diagnosis. It also finds the change point 
+   that is used in the mixed modelling.
+
+BIOS6623_Project3_MixedModeling
+   This SAS code runs the mixed modeling for each of the four outcomes. It uses four datasets saved
+   in "C:\Users\cottonel\Documents\BIOS6623_AdvancedData\Project_Three". These datasets had the NA's
+   manually changed in excel to "."---they were originally generated from the BIOS6623_Project3_Graphing
 
 
 DOCS FILES:
@@ -65,6 +90,8 @@ tableOne and tableTwo
 tableReport
    tableOne and tableTwo saved and formatted in a word document-used in final report. 
 
+FinalReport
+   This is the final report for the analysis performed for this project.
 
 
 

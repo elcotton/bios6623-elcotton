@@ -26,7 +26,7 @@ ggplot(data = LogIIgraph , aes(x = ageDiff, y = logmemII, group = id)) +
   theme_bw() +
   scale_x_continuous(name = "Year before Dx") +
   scale_y_continuous(name = "LogMEMII score") +
-  labs(title = "Graph 1: LogMEMII score over time")+
+  labs(title = "Graph 6: LogMEMII score over time")+
   theme(text = element_text(size=12)) +
   theme(plot.title = element_text(size = rel(2), hjust = 0.5))+ 
   theme(axis.title = element_text(face = "bold")) +

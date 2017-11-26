@@ -18,6 +18,10 @@ mentLogII <- ment[!is.na(ment$logmemII),]
 animal <- ment[!is.na(ment$animals),]
 blockR <- ment[!is.na(ment$blockR),]
 
+#Delete anyone who has less than 3 measurements for each
+keep <- names(which(table(mentLogI$id)>=3))
+mentLogI <- mentLogI[mentLogI$id %in% keep,]
+
 #delete those who don't have three measurement
 keep <- names(which(table(mentLogI$id)>=3))
 mentLogI <- mentLogI[mentLogI$id %in% keep,]
@@ -73,8 +77,8 @@ ggplot(data = animal, aes(x = age, y = animals, group = id, color = demind)) +
                      labels = c("No", "Yes")) +
   theme_bw() +
   scale_x_continuous(name = "Age (Years)") +
-  scale_y_continuous(name = "Category Fluency for Animals Score") +
-  labs(title = "Graph 3: Category Fluency Score over time")+
+  scale_y_continuous(name = "Animal Score") +
+  labs(title = "Graph 1: Animal Score over time")+
   theme(text = element_text(size=12)) +
   theme(plot.title = element_text(size = rel(2), hjust = 0.5))+ 
   theme(axis.title = element_text(face = "bold")) +

@@ -7,18 +7,20 @@
 #import the data
 ment <- read.csv("C:/Users/cottonel/Documents/BIOS6623_AdvancedData/Project_Three/Project3Data_Cleaned.csv")
 
+numObs <- table(ment$id)
 #Get only the first measurement on each person
 ment <- ment[!duplicated(ment$id),]
+ment$numObs <- numObs
 
 #Make mini datasets
 mentDem <- ment[ment$demind == 1,]
 mentNoDem <- ment[ment$demind == 0,]
 
 #Make tableOne: Demographics
-tableOne <- matrix(NA, ncol = 4, nrow = 7)
+tableOne <- matrix(NA, ncol = 4, nrow = 8)
 colnames(tableOne) <- c("Variable", "All Patients", "Dementia Diagnosis", "No Dementia Diagnosis")
-tableOne[,1] <- c("N", "Sex (n (%))", "Male", "Female", "SES (mean ± sd)", 
-                  "Age (mean ± sd)", "Age at onset (mean ± sd)")
+tableOne[,1] <- c("N","Sex (n (%))", "Male", "Female", "SES (mean ± sd)", 
+                  "Age (mean ± sd)", "Age at onset (mean ± sd)", "Number Observation (mean ± sd)")
 
 contFunc <- function(x){
   return(paste(round(mean(x, na.rm = TRUE),2), "±", round(sd(x, na.rm = TRUE),2), "(Missing =", sum(is.na(x)), ")"))
@@ -44,6 +46,10 @@ tableOne[6,4] <- contFunc(mentNoDem$age)
 tableOne[7,2] <- contFunc(ment$ageonset)
 tableOne[7,3] <- contFunc(mentDem$ageonset)
 tableOne[7,4] <- contFunc(mentNoDem$ageonset)
+
+tableOne[8,2] <- contFunc(ment$numObs)
+tableOne[8,3] <- contFunc(mentDem$numObs)
+tableOne[8,4] <- contFunc(mentNoDem$numObs)
 
 write.csv(tableOne, "C:/Repositories/bios6623-elcotton/Project3/Reports/tableOne.csv")
 
